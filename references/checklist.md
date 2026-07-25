@@ -46,7 +46,8 @@ poser**, les **signaux d'alerte** typiques (souvent propres au code IA), et la
   justifier les choix.
 - Cotation : ⚠️ si des noms ou structures obscurcissent l'intention par
   endroits ; ❌ si une fonction centrale du diff reste incompréhensible sans
-  exécution mentale ligne à ligne.
+  exécution mentale ligne à ligne. Repère chiffré : une fonction de complexité
+  cyclomatique > 15 vaut ⚠️ d'office.
 
 ### 2.2 Absence de duplication
 - Question : ce bloc existe-t-il déjà ailleurs ? Aurait-il dû être factorisé ?
@@ -55,6 +56,8 @@ poser**, les **signaux d'alerte** typiques (souvent propres au code IA), et la
   documenté du code assisté par IA.)
 - Cotation : ⚠️ duplication locale facilement factorisable ; ❌ bloc de logique
   métier cloné ou réimplémentation d'un utilitaire déjà présent dans le dépôt.
+  Repère chiffré : tout bloc cloné de plus de 5-10 lignes se justifie ou se
+  factorise.
 
 ### 2.3 Justesse vérifiée ≠ tests qui passent
 - Question : les tests vérifient-ils le *bon* comportement, ou ont-ils été
@@ -88,6 +91,10 @@ poser**, les **signaux d'alerte** typiques (souvent propres au code IA), et la
 - Alerte : secrets/clés en dur, entrées non validées, SQL/commande concaténée,
   dépendance hallucinée (nom inexistant → risque de *slopsquatting*), paquet
   non maintenu ou vulnérable, permissions trop larges.
+- Outils : `npm audit --audit-level=high`, `pip-audit` ou `trivy fs .` pour
+  les dépendances vulnérables ; pour tout paquet nouvellement introduit,
+  vérifier qu'il existe réellement sur le registre officiel
+  (anti-*slopsquatting*).
 - Cotation : ❌ secret en dur, injection possible ou dépendance
   inexistante/vulnérable ; ⚠️ validation d'entrée incomplète sans exposition
   directe.
@@ -144,6 +151,8 @@ Réserves mineures / cosmétique :
 - ...
 
 Statut : prototype étiqueté ? origine IA tracée ? propriétaire identifié ?
+
+Revue réalisée par : <humain, ou agent : nom (identifiant exact du modèle)>
 ```
 
 Règle d'or : citer des emplacements précis, séparer le bloquant du cosmétique,

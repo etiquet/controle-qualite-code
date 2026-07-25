@@ -28,6 +28,7 @@ Colonnes du tableau : **Métrique | Outil (version) | Commande exacte | Valeur
 | Duplication | jscpd 4.0.4 | `npx jscpd --min-tokens 50 src/` | 6,8 % | −1,4 pt |
 | Complexité moyenne | radon 6.0.1 | `radon cc -s -a src/` | B (7,2) | −0,6 |
 | Couverture | pytest-cov 5.0.0 | `pytest --cov=src --cov-report=term` | 71 % | +3 pt |
+| Vulnérabilités (high+) | pip-audit 2.7.3 | `pip-audit -r requirements.txt` | 1 | −1 |
 | Volume (lignes) | git 2.45 | `git ls-files 'src/**' \| xargs wc -l \| tail -1` | 12 480 | −310 |
 
 Actions menées :
@@ -45,6 +46,7 @@ Tendance : ↓ — la duplication et le volume baissent, la couverture monte.
 | Duplication | jscpd 4.0.4 | `npx jscpd --min-tokens 50 src/` | 8,2 % | — |
 | Complexité moyenne | radon 6.0.1 | `radon cc -s -a src/` | B (7,8) | — |
 | Couverture | pytest-cov 5.0.0 | `pytest --cov=src --cov-report=term` | 68 % | — |
+| Vulnérabilités (high+) | pip-audit 2.7.3 | `pip-audit -r requirements.txt` | 2 | — |
 | Volume (lignes) | git 2.45 | `git ls-files 'src/**' \| xargs wc -l \| tail -1` | 12 790 | — |
 
 Actions menées : aucune (mesure initiale).

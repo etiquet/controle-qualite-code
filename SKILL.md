@@ -147,6 +147,10 @@ et se rappeler que **refuser proprement fait partie du travail de qualité** —
 la gentillesse est de dire non clairement plutôt que de laisser entrer une dette
 que quelqu'un paiera en silence.
 
+Enfin, **signer le compte rendu** : un agent s'y identifie par son nom et
+l'identifiant exact de son modèle — la même exigence de traçabilité que la
+règle 3.3, appliquée au réviseur lui-même.
+
 ---
 
 ## Mode rituel — la passe d'hygiène (dégonfler la dette)
@@ -161,9 +165,12 @@ la fusion. Déroulé en quatre temps :
    - duplication : `npx jscpd --min-tokens 50 .` (multi-langages) ; à défaut
      `pylint --disable=all --enable=duplicate-code` (Python) ou `pmd cpd` ;
    - complexité cyclomatique : `radon cc -s -a .` ou `lizard` (Python /
-     multi-langages), règle `complexity` d'ESLint (JS/TS) ;
+     multi-langages), règle `complexity` d'ESLint (JS/TS) — repère : signaler
+     les fonctions au-dessus de 15 ;
    - couverture de tests : l'outil du projet (`pytest --cov`,
      `npx vitest run --coverage`, `go test -cover`…) ;
+   - vulnérabilités : `npm audit --audit-level=high`, `pip-audit` ou
+     `trivy fs .` — compter les vulnérabilités hautes et critiques ;
    - volume : `git ls-files | wc -l` (fichiers) et
      `git ls-files | xargs wc -l | tail -1` (lignes), ou `cloc` si disponible.
 
