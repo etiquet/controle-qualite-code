@@ -1,126 +1,235 @@
-# Checklist détaillée — contrôle qualité de code
+# Checklist de revue
 
-Grille exécutable, point par point. Pour chaque item : la **question à se
-poser**, les **signaux d'alerte** typiques (souvent propres au code IA), et la
-**cotation** ✅ / ⚠️ / ❌.
+Utiliser cette grille pour évaluer une contribution. Ne coter que ce qui entre
+dans le périmètre de la demande.
 
----
+## Sommaire
 
-## NIVEAU 1 — Règles d'entrée
+- [Échelle commune](#échelle-commune)
+- [Niveau 1 — Entrée et révisabilité](#niveau-1--entrée-et-révisabilité)
+- [Niveau 2 — Fond technique](#niveau-2--fond-technique)
+- [Niveau 3 — Statut et traçabilité](#niveau-3--statut-et-traçabilité)
+- [Format du compte rendu](#format-du-compte-rendu)
 
-### 1.1 Intention déclarée
-- Question : quel *effet* la contribution vise-t-elle ? Est-il énoncé, ou
-  faut-il le deviner à partir du diff ?
-- Alerte : titre générique (« fix », « update »), description absente ou
-  visiblement générée, PR qui « améliore » sans problème identifié.
-- Cotation : ❌ si aucune intention lisible → renvoyer sans lire le code.
+## Échelle commune
 
-### 1.2 Propriétaire humain responsable
-- Question : quel humain nommé assume ce code et sa reprise ?
-- Alerte : « généré par l'agent », aucun mainteneur prêt à répondre aux
-  questions, contributeur incapable d'expliquer son propre diff.
-- Cotation : ❌ si personne n'assume.
+| Statut | Critère |
+|---|---|
+| ✅ Conforme | Une preuve accessible et suffisante soutient le critère. |
+| ⚠️ Réserve | Une déficience réelle mais non bloquante est établie ; la revue peut continuer. |
+| ❌ Bloquant | Un défaut matériel confirmé empêche une fusion sûre. |
+| ◻️ Non évalué | La preuve, l'accès, l'environnement ou le contexte manque. Ce statut n'est pas un défaut. |
+| N/A | Le critère ne s'applique pas, avec justification. |
 
-### 1.3 Preuve de comportement
-- Question : y a-t-il une reproduction, ou un test rouge → vert ?
-- Alerte : « les tests passent » sans nouveau test ; correctif sans cas
-  reproduisant le bug ; capture d'écran au lieu d'une preuve exécutable.
-- Cotation : ⚠️ si preuve faible, ❌ si aucune preuve pour un correctif de bug.
+Qualifier chaque constat par une sévérité :
 
-### 1.4 Coût de revue proportionné
-- Question : la taille et la découpe rendent-elles la revue humainement
-  possible dans un temps raisonnable ?
-- Alerte : méga-PR (milliers de lignes) générée en minutes, mélange de
-  refactor + feature + reformatage dans un seul diff.
-- Cotation : ⚠️/❌ → demander un découpage avant toute revue de fond.
+- **Critique** : compromission, perte ou corruption de données, contrôle
+  d'accès cassé, comportement central faux ou opération irréversible non
+  maîtrisée.
+- **Majeure** : comportement requis incomplet, régression probable, test
+  essentiel absent, API inexistante ou dette importante et immédiate.
+- **Mineure** : amélioration locale qui ne bloque pas le comportement attendu.
 
----
+Indiquer une confiance `haute`, `moyenne` ou `faible` pour un risque inféré.
+Une hypothèse à confiance faible appelle une vérification, pas une accusation.
+Ne pas employer ⚠️ pour masquer une absence de preuve : utiliser ◻️.
 
-## NIVEAU 2 — Règles de fond
+## Niveau 1 — Entrée et révisabilité
 
-### 2.1 Lisibilité / intention du code
-- Question : puis-je lire une fonction et dire *ce qu'elle fait et pourquoi*
-  sans exécuter mentalement chaque ligne ?
-- Alerte : noms vagues (`data`, `tmp`, `handle`), fonctions trop longues,
-  abstractions inutiles, commentaires qui paraphrasent le code au lieu de
-  justifier les choix.
+### 1.1 Intention
 
-### 2.2 Absence de duplication
-- Question : ce bloc existe-t-il déjà ailleurs ? Aurait-il dû être factorisé ?
-- Alerte : copier-coller avec variations minimes, logique répétée dans
-  plusieurs fichiers, réimplémentation d'un utilitaire existant. (Défaut n°1
-  documenté du code assisté par IA.)
+- Rechercher : problème, effet attendu, comportement explicitement hors
+  périmètre et critères d'acceptation.
+- ✅ si l'effet recherché et les limites permettent de juger le diff.
+- ⚠️ si l'effet est clair mais une limite secondaire reste implicite.
+- ❌ si les métadonnées accessibles ne contiennent aucun objectif identifiable
+  ou présentent des objectifs contradictoires.
+- ◻️ si la description, l'issue ou l'ADR n'est pas accessible.
 
-### 2.3 Justesse vérifiée ≠ tests qui passent
-- Question : les tests vérifient-ils le *bon* comportement, ou ont-ils été
-  taillés pour passer ?
-- Alerte : assertions triviales, valeurs attendues codées en dur qui reflètent
-  la sortie observée plutôt que la spécification, tests sans cas négatifs,
-  mocks qui masquent la vraie logique. (Le piège « optimiser la mesure ».)
+### 1.2 Propriétaire humain
 
-### 2.4 API et fonctions réelles
-- Question : chaque appel externe existe-t-il réellement dans cette version ?
-- Alerte : méthodes/options/paramètres inventés, signatures fausses, imports
-  de paquets inexistants, exemples plausibles mais faux (cas curl). Vérifier
-  contre la doc/le code réel, pas contre la vraisemblance.
+- Rechercher : auteur ou mainteneur humain prêt à répondre du changement et de
+  sa reprise.
+- ✅ si une personne responsable est explicitement identifiée.
+- ⚠️ si un auteur humain est connu mais que sa responsabilité doit être
+  confirmée avant fusion.
+- ❌ si la contribution déclare qu'aucun humain ne l'assume.
+- ◻️ si les métadonnées de contribution ne sont pas accessibles.
 
-### 2.5 Erreurs et cas limites
-- Question : que se passe-t-il hors du chemin heureux ?
-- Alerte : pas de gestion d'erreur, entrées nulles/vides ignorées, hypothèses
-  implicites (liste non vide, réseau fiable), absence de timeout/retry,
-  conditions de course.
+Un agent ou un bot ne remplace pas le propriétaire humain.
 
-### 2.6 Sécurité, secrets, dépendances
-- Question : introduit-on une faille, un secret, une dépendance douteuse ?
-- Alerte : secrets/clés en dur, entrées non validées, SQL/commande concaténée,
-  dépendance hallucinée (nom inexistant → risque de *slopsquatting*), paquet
-  non maintenu ou vulnérable, permissions trop larges.
+### 1.3 Preuve de comportement proportionnée
+
+- Rechercher : reproduction rouge → vert pour un bug, test ou démonstration
+  exécutable pour une fonctionnalité, non-régression pour une refactorisation,
+  rendu ou build pour la documentation, validation adaptée à la configuration.
+- ✅ si la preuve couvre le comportement central et les risques du changement.
+- ⚠️ si un cas secondaire non critique est réellement omis.
+- ❌ si une preuve indispensable est connue comme absente, ou si la preuve
+  contredit l'effet annoncé.
+- ◻️ si les résultats, l'environnement ou la spécification sont inaccessibles.
+
+Ne pas exiger mécaniquement un nouveau test pour un changement qui ne modifie
+aucun comportement exécutable.
+
+### 1.4 Périmètre révisable
+
+- Rechercher : diff cohérent, changements générés isolés, absence de
+  reformatage sans rapport, dépendances entre commits ou PR expliquées.
+- ✅ si le périmètre peut être compris et testé comme une unité.
+- ⚠️ si du bruit identifié ralentit la revue sans masquer l'intention.
+- ❌ si le mélange des changements empêche une revue fiable.
+- ◻️ si le diff complet ou ses dépendances ne sont pas accessibles.
+
+Une taille élevée est un signal, pas une preuve suffisante de mauvaise qualité.
+
+### Décision après le niveau 1
+
+Si un élément indispensable est ❌ ou ◻️ et empêche une décision sûre, arrêter
+la revue approfondie et effectuer le balayage critique décrit dans `SKILL.md`.
+Marquer les autres contrôles ◻️, rendre `NON RÉVISABLE — FUSION BLOQUÉE`, puis
+lister exactement les informations ou découpages nécessaires pour reprendre.
+
+Si le balayage prouve que l'approche entière est dangereuse et qu'une correction
+locale ne suffit pas, appliquer `REFUSER` selon la matrice.
+
+## Niveau 2 — Fond technique
+
+### 2.1 Comportement et justesse
+
+- Vérifier le chemin nominal, les invariants, les sorties, les effets de bord
+  et la compatibilité avec l'intention.
+- ✅ si les chemins importants sont soutenus par le code et des preuves.
+- ⚠️ si un cas secondaire confirmé reste insuffisamment protégé.
+- ❌ si un comportement requis est faux, absent ou contredit par les tests.
+- ◻️ si la spécification ou l'exécution nécessaire est inaccessible.
+
+### 2.2 Tests et résistance aux faux positifs
+
+- Vérifier que les assertions portent sur les effets attendus, que les cas
+  négatifs pertinents existent et que les mocks ne remplacent pas la logique
+  testée.
+- ✅ si les tests auraient échoué face aux défauts qu'ils prétendent prévenir.
+- ⚠️ si un cas non critique est effectivement manquant.
+- ❌ si les tests verdissent sans exercer l'intention centrale, sont désactivés
+  ou masquent une régression confirmée.
+- ◻️ si les tests ne peuvent pas être lus ou exécutés.
+
+### 2.3 Interfaces, API et dépendances réelles
+
+- Vérifier les signatures et options contre le code, le verrou de dépendances
+  ou la documentation de la version utilisée.
+- ✅ si chaque interface nouvelle ou modifiée est vérifiée.
+- ⚠️ si une compatibilité secondaire est prouvée partiellement mais n'empêche
+  pas le comportement central.
+- ❌ si un appel, paquet, paramètre ou comportement d'API est confirmé
+  inexistant ou incompatible.
+- ◻️ si la version ou la source d'autorité est inaccessible.
+
+Ne pas qualifier d'hallucination un paquet simplement inconnu ou privé.
+
+### 2.4 Erreurs, limites et concurrence
+
+- Vérifier les entrées vides ou extrêmes, timeouts, annulations, erreurs
+  réseau, reprises partielles, idempotence, concurrence et nettoyage.
+- ✅ si les cas pertinents au risque sont gérés ou explicitement exclus.
+- ⚠️ si un cas plausible non critique est réellement non couvert.
+- ❌ si un cas réaliste provoque perte de données, incohérence ou échec du
+  comportement central.
+- ◻️ si l'environnement nécessaire n'est pas disponible.
+
+### 2.5 Sécurité, secrets et chaîne d'approvisionnement
+
+- Examiner les contrôles d'accès, validations d'entrée, injections, secrets,
+  permissions, journaux sensibles, nouvelles dépendances et migrations.
+- ✅ si aucun risque pertinent n'est trouvé dans le périmètre inspecté et que
+  les protections attendues sont visibles.
+- ⚠️ si une faiblesse confirmée de défense en profondeur a un impact borné.
+- ❌ si une vulnérabilité exploitable, un secret, une permission dangereuse ou
+  une dépendance trompeuse est confirmé.
+- ◻️ si le modèle de menace ou les données nécessaires sont inaccessibles.
+
+Ne pas affirmer qu'une dépendance est vulnérable sans source ou résultat
+vérifiable.
+
+### 2.6 Lisibilité et duplication
+
+- Vérifier nommage, cohésion, flux de contrôle, commentaires de décision,
+  duplication de connaissance et abstractions déjà disponibles.
+- ✅ si l'intention locale reste compréhensible et les répétitions justifiées.
+- ⚠️ si la complexité ou duplication est localisée et réparable.
+- ❌ si elle masque un comportement divergent, multiplie un correctif critique
+  ou empêche d'établir la justesse.
+- ◻️ si le contexte voisin nécessaire n'est pas accessible.
 
 ### 2.7 Surface de maintenance
-- Question : quel poids de long terme ce code ajoute-t-il ?
-- Alerte : nouvelle dépendance lourde pour un petit gain, couplage fort,
-  config supplémentaire, chemin de code que personne ne comprendra dans 3 ans.
 
----
+- Évaluer dépendances, configuration, observabilité, compatibilité, chemins de
+  reprise et coût durable par rapport au bénéfice annoncé.
+- ✅ si la surface ajoutée est proportionnée et possédée.
+- ⚠️ si une simplification bornée réduirait sensiblement le coût.
+- ❌ si le changement impose une charge durable majeure sans bénéfice ni
+  propriétaire identifiable.
+- ◻️ si les contraintes d'exploitation sont inconnues.
 
-## NIVEAU 3 — Règles de statut
+## Niveau 3 — Statut et traçabilité
 
-### 3.1 Marquer le jetable comme jetable
-- Question : ce code est-il un prototype ? Si oui, est-ce explicite ?
-- Alerte : prototype qui glisse en production sans étiquette, « démo » branchée
-  sur des données réelles, absence de date de mort ou de plan de reprise.
+### 3.1 Durable ou jetable
 
-### 3.2 Une porte unique
-- Question : ce code a-t-il subi la même revue que n'importe quel autre ?
-- Alerte : contournement au motif que « c'est le chef qui l'a écrit » ou « c'est
-  l'IA, c'est propre », auto-merge sans relecture.
+- ✅ si le statut est clair ; pour un prototype, inclure limites, propriétaire
+  et condition ou date de retrait.
+- ⚠️ si une échéance ou condition de sortie secondaire reste à préciser.
+- ❌ si un prototype connu comme dangereux est destiné à devenir une fondation
+  implicite.
+- ◻️ si la destination du code est inconnue.
 
-### 3.3 Tracer l'origine IA
-- Question : sait-on quelle part est générée, pour en suivre le taux de défaut ?
-- Alerte : aucune traçabilité, impossibilité de mesurer si le code IA casse
-  plus souvent. (Mesurer, pas interdire.)
+### 3.2 Processus de revue
 
----
+- ✅ si la contribution suit les protections normales du projet.
+- ⚠️ si une exception limitée est documentée et compensée.
+- ❌ si une protection obligatoire est sciemment contournée.
+- ◻️ si les règles ou paramètres du dépôt sont inaccessibles.
 
-## Modèle de compte rendu de revue
+### 3.3 Assistance d'un agent
 
-```
-VERDICT : ACCEPTER | CORRIGER | REFUSER
+- ✅ si l'assistance connue ou exigée est tracée avec l'agent réel, son rôle,
+  son périmètre et ses validations ; conserver l'humain responsable séparé.
+- ⚠️ si une assistance connue est déclarée mais son rôle ou périmètre reste
+  incomplet.
+- ❌ si une politique explicite exige la déclaration et que l'assistance connue
+  est sciemment dissimulée ou faussement attribuée.
+- ◻️ si l'usage de l'IA ou la politique ne peut pas être établi.
+- N/A si aucune assistance n'est connue et qu'aucune politique ne l'exige.
 
-Résumé (2-3 lignes) : intention de la contribution + décision.
+Suivre la convention du projet. `Assisted-by:` est notamment documenté pour les
+contributions au noyau Linux, mais n'est pas une norme universelle :
+<https://www.kernel.org/doc/html/next/process/coding-assistants.html>.
 
-Bloquants (❌) :
-- fichier:ligne — problème — action attendue
+## Format du compte rendu
 
-À corriger (⚠️) :
-- fichier:ligne — problème — suggestion
+```markdown
+VERDICT : NON RÉVISABLE | ACCEPTER | CORRIGER | REFUSER
 
-Réserves mineures / cosmétique :
+Résumé : intention, périmètre examiné et décision.
+
+Preuves consultées :
 - ...
 
-Statut : prototype étiqueté ? origine IA tracée ? propriétaire identifié ?
-```
+Balayage critique :
+- résultat, y compris lorsque la revue est non révisable
 
-Règle d'or : citer des emplacements précis, séparer le bloquant du cosmétique,
-et refuser proprement quand il le faut — laisser entrer une dette que quelqu'un
-paiera en silence n'est pas un service rendu.
+Bloquants :
+- [sévérité] source:emplacement — observation — impact — action attendue
+
+Réserves et risques :
+- [sévérité, confiance] source:emplacement — risque — vérification attendue
+
+Non évalué / non applicable :
+- élément — statut — raison — information nécessaire
+
+Statut et traçabilité :
+- durable/jetable — propriétaire humain — assistance connue
+
+Validations exécutées :
+- commande — résultat, ou « non exécutée » avec raison
+```

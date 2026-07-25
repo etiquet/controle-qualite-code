@@ -1,0 +1,4 @@
+interface:
+  display_name: "Contrôle qualité du code"
+  short_description: "Revue probante et hygiène reproductible"
+  default_prompt: "Utilise $controle-qualite-code pour auditer cette contribution avec des preuves et un verdict explicite."

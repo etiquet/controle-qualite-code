@@ -1,154 +1,127 @@
 ---
 name: controle-qualite-code
 description: >-
-  Grille de contrôle qualité pour réviser du code — en particulier du code
-  généré ou co-écrit par une IA — avant de l'accepter dans une base maintenue,
-  et rituel d'hygiène récurrent pour dégonfler la dette existante. À utiliser
-  quand quelqu'un demande de « relire », « auditer », « évaluer la qualité »,
-  « décider d'accepter une PR », « faire une revue de code », « vérifier du
-  code IA », ou de lancer une « passe d'hygiène » / un « rituel qualité » sur
-  une base. Mode revue : trois niveaux de règles (entrée, fond, statut) et un
-  verdict motivé ACCEPTER / CORRIGER / REFUSER. Mode rituel : mesurer la dette
-  (duplication, complexité, couverture), recommander des passes de
-  refactorisation ciblées, re-mesurer, tracer la courbe.
+  Réviser une contribution de code avec des preuves et un verdict explicite,
+  ou mesurer l'évolution de la dette technique avec un rituel reproductible.
+  Utiliser ce skill pour relire ou auditer un diff, une branche ou une pull
+  request, décider si une contribution est révisable et acceptable, contrôler
+  du code assisté par IA sans lui appliquer un standard différent, ou lancer
+  une passe d'hygiène sur une base existante. Produire selon le cas un verdict
+  NON RÉVISABLE / ACCEPTER / CORRIGER / REFUSER, ou un relevé de métriques
+  comparable accompagné de 1 à 3 recommandations bornées.
 ---
 
-# Contrôle qualité de code (à l'ère de l'IA)
+# Contrôler la qualité du code
 
-## Principe directeur
+## Appliquer le contrat commun
 
-Produire du code ne coûte presque plus rien ; le **comprendre, le maintenir et
-l'assumer** coûte toujours aussi cher. Une revue de qualité ne sert donc plus à
-« écrire mieux » mais à **décider quoi laisser entrer** dans une base qu'un
-humain devra porter pendant des années. La question centrale de toute revue
-n'est pas « ce code est-il joli ? » mais :
+Sélectionner un seul mode à partir de la demande :
 
-> **Quelqu'un pourra-t-il comprendre, faire évoluer et assumer ce code dans
-> trois ans — et le coût de le maintenir est-il justifié par ce qu'il
-> apporte ?**
+- **Revue** : évaluer une contribution, un diff, une branche ou une pull
+  request.
+- **Hygiène** : mesurer une base existante et proposer une réduction de dette.
 
-Le code généré par IA est typiquement *syntaxiquement correct et sémantiquement
-opaque* : il compile, les tests passent, mais l'intention est absente, les cas
-limites sont négligés, des fonctions inexistantes sont parfois appelées, et la
-duplication remplace la conception. Cette grille cible précisément ces défauts.
+Ne pas mélanger les modes sans demande explicite. Rester en lecture seule par
+défaut : inspecter et recommander n'autorise ni modification, ni installation,
+ni commit, ni publication. Réutiliser les outils déjà configurés dans le
+projet. Demander une autorisation avant toute action supplémentaire nécessaire.
 
-## Comment utiliser cette grille
+Fonder chaque conclusion sur une preuve accessible. Distinguer :
 
-Appliquer les trois niveaux **dans l'ordre**. Un échec au Niveau 1 stoppe la
-revue : inutile de lire en détail un code qu'on ne peut pas assumer.
+- **Observation** : directement établie par le code, les métadonnées ou une
+  commande exécutée.
+- **Risque** : conséquence plausible à confirmer, avec niveau de confiance.
+- **Non évalué** : information inaccessible ou impossible à vérifier.
+- **Non applicable** : critère sans rapport avec la contribution, avec
+  justification.
 
-1. **Niveau 1 — Règles d'entrée** : vérifier *avant de lire le code* que la
-   contribution est recevable et révisable. (Rétablit l'asymétrie coût.)
-2. **Niveau 2 — Règles de fond** : vérifier la qualité *dans* le code.
-3. **Niveau 3 — Règles de statut** : vérifier le *statut* du code (jetable vs
-   durable) et sa traçabilité.
+Ne jamais transformer une absence d'accès en preuve d'absence. Signaler
+séparément qu'un élément obligatoire est connu comme absent ou qu'il n'a pas pu
+être vérifié.
 
-Pour chaque règle, attribuer : ✅ conforme · ⚠️ à corriger · ❌ bloquant.
-Puis rendre un **verdict global motivé** (voir plus bas). Toujours citer des
-lignes/fichiers précis — jamais un jugement vague.
+Appliquer les mêmes critères techniques quelle que soit l'origine du code.
+Tracer l'assistance d'un agent lorsqu'elle est connue ou exigée par le projet,
+sans inventer son identité, son modèle ou son rôle.
 
-Le détail exécutable de chaque point (questions à se poser, signaux d'alerte,
-exemples) est dans `references/checklist.md`. Charger ce fichier lorsqu'une
-revue complète et systématique est demandée.
+## Conduire une revue
 
----
+Lire [`references/checklist.md`](references/checklist.md) pour toute revue.
 
-## Niveau 1 — Règles d'entrée (avant de lire le code)
+1. **Cadrer.** Identifier l'intention, le périmètre, le propriétaire humain,
+   les preuves de comportement, les contraintes et les artefacts accessibles.
+2. **Évaluer l'entrée.** Déterminer si la contribution est suffisamment
+   expliquée, attribuée, prouvée et bornée pour permettre une revue responsable.
+3. **Maintenir un filet de sécurité.** Même si l'entrée est insuffisante,
+   examiner le diff accessible à la recherche de risques critiques évidents :
+   secret exposé, contrôle d'accès affaibli, injection, destruction ou
+   corruption de données, migration irréversible et dépendance suspecte. Ne pas
+   présenter ce balayage comme une revue complète.
+4. **Évaluer le fond si l'entrée est révisable.** Contrôler le comportement,
+   les tests, les interfaces réelles, les erreurs, la sécurité, la lisibilité,
+   la duplication et la surface de maintenance. Sinon, marquer ces contrôles
+   non évalués et passer au verdict après le balayage critique.
+5. **Évaluer le statut accessible.** Vérifier le caractère durable ou jetable,
+   la responsabilité humaine, le processus de revue et la traçabilité connue.
+6. **Rendre un verdict.** Appliquer la première condition satisfaite :
 
-Un échec ici est en principe **bloquant** : on renvoie sans réviser.
+   | Priorité | Condition | Verdict |
+   |---|---|---|
+   | 1 | Des preuves suffisantes montrent que l'intention ou l'approche est fondamentalement dangereuse ou incompatible avec les exigences, et qu'une correction locale ne suffit pas | **REFUSER** |
+   | 2 | Une information ou un artefact indispensable manque ou reste inaccessible et empêche une décision sûre | **NON RÉVISABLE** |
+   | 3 | Au moins un défaut bloquant confirmé est réparable avant fusion | **CORRIGER** |
+   | 4 | Les contrôles nécessaires sont évalués, ou justifiés non applicables, et aucun défaut bloquant n'est confirmé | **ACCEPTER** |
 
-1. **Intention déclarée** — La contribution énonce l'*effet recherché* (le
-   « pourquoi »), pas seulement le diff. Pas d'intention lisible → refus.
-2. **Propriétaire humain responsable** — Un humain nommé assume la PR. L'IA
-   n'est jamais redevable ; un humain l'est toujours.
-3. **Preuve de comportement** — Reproduction du bug, ou test qui échouait
-   avant / passe après. On évalue un *comportement*, pas une esthétique.
-4. **Coût de revue proportionné** — Une PR massive générée en minutes n'a pas
-   droit à des heures de revue par défaut. Elle doit être rendue révisable :
-   petite, ciblée, découpée, expliquée.
+Ne pas utiliser `REFUSER` pour punir une information simplement inaccessible.
+Ne pas utiliser `ACCEPTER` si un contrôle indispensable reste non évalué.
 
-## Niveau 2 — Règles de fond (dans le code)
+Pour chaque constat, citer `source:emplacement` — fichier et ligne, description
+de PR, issue, journal CI ou configuration —, indiquer la sévérité, expliquer
+l'impact et demander une action vérifiable. Prioriser les défauts de
+comportement, de sécurité et de maintenance ; éviter d'ériger une préférence
+stylistique en bloquant.
 
-1. **Lisibilité / intention** — Le code se lit-il comme une explication de ce
-   qu'il fait et pourquoi ? Nommage, structure, absence de complexité gratuite.
-2. **Pas de duplication** — Cible n°1 du code IA (blocs clonés en forte hausse
-   depuis l'arrivée des assistants). Est-ce refactorisé, ou copié-collé ?
-3. **Justesse vérifiée ≠ « les tests passent »** — Les tests testent-ils le bon
-   comportement, ou ont-ils été écrits pour verdir ? Se méfier de la « triche »
-   (optimiser la mesure, pas l'intention).
-4. **API et fonctions réelles** — Le code appelle-t-il uniquement ce qui existe
-   vraiment ? Traquer les hallucinations (appels, méthodes, options inventés).
-5. **Erreurs et cas limites** — Chemin nominal soigné mais bords négligés :
-   entrées vides/nulles, concurrence, échecs réseau, valeurs extrêmes.
-6. **Sécurité, secrets, dépendances** — Secrets en dur, dépendances hallucinées
-   ou vulnérables, entrées non validées, injection.
-7. **Surface de maintenance** — Ce code crée-t-il une dette qu'un humain devra
-   porter longtemps ? Le gain justifie-t-il le poids ajouté ?
+## Conduire une passe d'hygiène
 
-## Niveau 3 — Règles de statut (méta)
+Lire [`references/hygiene.md`](references/hygiene.md) avant de mesurer ou de
+comparer la dette.
 
-1. **Marquer le jetable comme jetable** — Tout prototype naît avec une « date
-   de mort » ou une étiquette *non maintenu*. Le sacrificiel non étiqueté qui
-   devient fondation par accident est la source réelle de dette.
-2. **Une porte unique** — Le code d'un dirigeant ou d'une IA passe par la même
-   revue que celui de n'importe qui. Aucun passe-droit hiérarchique ou
-   technologique. (C'est la règle du noyau Linux.)
-3. **Tracer l'origine IA** — Marquer le code généré (à la manière du tag
-   `Assisted-by` du noyau Linux), non pour l'interdire, mais pour mesurer son
-   taux de défaut réel dans le temps.
+1. Déterminer l'autorisation : `AUDIT` en lecture seule, `JOURNAL` si l'écriture
+   du relevé est demandée, ou `REMÉDIATION` si le code doit être modifié.
+2. Définir le commit, l'état de l'arbre, le périmètre, les exclusions et les
+   métriques utiles.
+3. Découvrir les outils déjà déclarés par le projet et relever leurs versions,
+   commandes et configurations.
+4. Mesurer sans modification non autorisée. Conserver les erreurs et valeurs
+   indisponibles au lieu de les remplacer par des estimations ou par zéro.
+5. Comparer uniquement des mesures compatibles. Si la méthode, l'outil, la
+   configuration ou le périmètre change matériellement, créer un nouvel état
+   zéro pour la métrique et ne pas annoncer de tendance.
+6. Proposer 1 à 3 actions bornées, ordonnées par impact et risque, avec une
+   preuve de fin et des tests de protection.
+7. Après une refactorisation autorisée, réexécuter les tests et exactement les
+   mêmes mesures.
 
----
+Décrire la tendance métrique par métrique. Ne pas réduire la qualité globale à
+un score composite arbitraire.
 
-## Verdict global
+## Tracer l'assistance d'un agent
 
-Conclure toute revue par l'un des trois verdicts, **motivé et actionnable** :
+Lorsque l'assistance est connue ou demandée, consigner au minimum :
 
-- **ACCEPTER** — Niveaux 1 et 3 conformes, Niveau 2 sans ❌. Réserves ⚠️
-  mineures listées mais non bloquantes.
-- **CORRIGER** — Recevable sur le fond mais points ⚠️/❌ précis à traiter avant
-  fusion. Lister chaque point avec fichier:ligne et l'action attendue.
-- **REFUSER** — Échec d'une règle d'entrée (N1) ou défaut de fond majeur
-  (justesse fausse, hallucination d'API, faille) sans propriétaire prêt à
-  assumer la reprise. Expliquer pourquoi, brièvement, avec respect.
+- l'humain responsable de la contribution ;
+- le nom réel de l'agent ou de l'outil ;
+- son modèle ou sa version uniquement si l'environnement les expose ;
+- son rôle et le périmètre produit ou modifié ;
+- les validations qu'il a réellement exécutées.
 
-Toujours : citer des emplacements précis, distinguer le bloquant du cosmétique,
-et se rappeler que **refuser proprement fait partie du travail de qualité** —
-la gentillesse est de dire non clairement plutôt que de laisser entrer une dette
-que quelqu'un paiera en silence.
+Employer la valeur `non exposé par l'environnement` plutôt que deviner. Ne
+jamais présenter l'agent comme propriétaire humain. Respecter d'abord la
+convention du projet ; à défaut, proposer une section de pull request
+`Traçabilité de l'agent` et un trailer `Assisted-by:`.
 
----
+## Valider une évolution du skill
 
-## Mode rituel — la passe d'hygiène (dégonfler la dette)
-
-La revue décide de ce qui entre ; le rituel s'occupe de ce qui est déjà entré.
-À lancer **à intervalle régulier** (hebdomadaire recommandé), pas seulement à
-la fusion. Déroulé en quatre temps :
-
-1. **Mesurer l'état de la base.** Produire les métriques de dette :
-   - duplication (blocs clonés, copier-coller) — outils : `jscpd`, `pylint`
-     (duplicate-code), `PMD CPD`, ou équivalent du langage ;
-   - complexité (cyclomatique / cognitive) — `radon`, `lizard`, `eslint
-     complexity`, ou équivalent ;
-   - couverture de tests — l'outil du projet ;
-   - volume : nombre de fichiers, de fonctions/méthodes, lignes de code.
-
-2. **Comparer à la passe précédente.** Chercher le relevé antérieur (fichier
-   `hygiene-log.md` ou équivalent à la racine du projet). Première passe →
-   c'est l'état zéro ; le créer.
-
-3. **Recommander les passes de refactorisation ciblées.** À partir des
-   mesures, proposer 1 à 3 actions *bornées et vérifiables*, les plus
-   rentables d'abord — typiquement : « refactorise toutes les instanciations
-   de X en une seule implémentation », « extrais l'utilitaire dupliqué dans
-   N fichiers », « ajoute des tests sur le module le moins couvert avant de
-   le toucher ». Chaque action recommandée doit être accompagnée de tests qui
-   protègent le comportement pendant la refactorisation.
-
-4. **Re-mesurer et tracer la courbe.** Après application, refaire les mesures,
-   consigner dans le journal (date, métriques, actions menées), et dire si la
-   courbe descend, stagne ou monte. C'est la courbe — pas l'impression — qui
-   dit si la dette dégonfle.
-
-Règle du rituel : petit et régulier bat gros et rare. Une passe d'une heure
-par semaine qui fait baisser la duplication de 1 % vaut mieux qu'un grand
-nettoyage annuel que personne n'ose lancer.
+Pour modifier ce skill, utiliser les cas de
+[`references/evaluation-scenarios.md`](references/evaluation-scenarios.md).
+Vérifier que la sortie reste fondée sur les preuves, que les verdicts suivent
+la matrice et qu'une demande de revue ne provoque aucune mutation implicite.
