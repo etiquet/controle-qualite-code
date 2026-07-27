@@ -8,7 +8,8 @@ description: >-
   « décider d'accepter une PR », « faire une revue de code », « vérifier du
   code IA », ou de lancer une « passe d'hygiène » / un « rituel qualité » sur
   une base. Mode revue : trois niveaux de règles (entrée, fond, statut) et un
-  verdict motivé ACCEPTER / CORRIGER / REFUSER. Mode rituel : mesurer la dette
+  verdict motivé NON RÉVISABLE / ACCEPTER / CORRIGER / REFUSER. Mode rituel :
+  mesurer la dette
   (duplication, complexité, couverture), recommander des passes de
   refactorisation ciblées, re-mesurer, tracer la courbe.
 ---
@@ -54,9 +55,18 @@ revue : inutile de lire en détail un code qu'on ne peut pas assumer.
 3. **Niveau 3 — Règles de statut** : vérifier le *statut* du code (jetable vs
    durable) et sa traçabilité.
 
-Pour chaque règle, attribuer : ✅ conforme · ⚠️ à corriger · ❌ bloquant.
-Puis rendre un **verdict global motivé** (voir plus bas). Toujours citer des
-lignes/fichiers précis — jamais un jugement vague.
+Pour chaque règle, attribuer :
+
+- ✅ conforme — une preuve accessible soutient le critère ;
+- ⚠️ à corriger — déficience réelle mais non bloquante ;
+- ❌ bloquant — défaut confirmé qui empêche une fusion sûre ;
+- ◻️ non évalué — la preuve ou l'accès manque ; ce n'est **pas** un défaut ;
+- N/A — critère sans objet, avec justification.
+
+**L'absence d'accès n'est jamais une preuve d'absence** : une information
+inaccessible se cote ◻️ en disant ce qui manque, pas ❌. Puis rendre un
+**verdict global motivé** (voir plus bas). Toujours citer des lignes/fichiers
+précis — jamais un jugement vague.
 
 Le détail exécutable de chaque point (questions à se poser, signaux d'alerte,
 exemples) est dans `references/checklist.md`. Charger ce fichier lorsqu'une
@@ -79,6 +89,13 @@ Collecte des preuves selon le contexte :
   auprès de l'utilisateur — demander l'intention et qui assume ; coter **N/A**
   ce qui est sans objet (ex. la découpe d'une PR qui n'existe pas). Ne jamais
   inventer une intention ou un propriétaire pour combler un trou.
+
+**Balayage critique, même si l'entrée échoue.** Une contribution non révisable
+n'est pas renvoyée les yeux fermés : balayer le diff accessible à la recherche
+des risques critiques évidents — secret exposé, injection, contrôle d'accès
+affaibli, destruction de données ou migration irréversible, dépendance
+suspecte — et les signaler. Sans présenter ce balayage comme une revue
+complète.
 
 1. **Intention déclarée** — La contribution énonce l'*effet recherché* (le
    « pourquoi »), pas seulement le diff. Pas d'intention lisible → refus.
@@ -131,16 +148,26 @@ Collecte des preuves selon le contexte :
 
 ## Verdict global
 
-Conclure toute revue par l'un des trois verdicts, **motivé et actionnable** :
+Conclure toute revue par l'un des quatre verdicts, **motivé et actionnable**.
+Appliquer la **première condition satisfaite**, dans cet ordre :
 
-- **ACCEPTER** — Niveau 1 conforme, Niveau 2 sans ❌, Niveau 3 conforme *en
-  tenant compte de la calibration de la règle 3.3* (consultative à la première
-  application). Réserves ⚠️ mineures listées mais non bloquantes.
-- **CORRIGER** — Recevable sur le fond mais points ⚠️/❌ précis à traiter avant
-  fusion. Lister chaque point avec fichier:ligne et l'action attendue.
-- **REFUSER** — Échec d'une règle d'entrée (N1) ou défaut de fond majeur
-  (justesse fausse, hallucination d'API, faille) sans propriétaire prêt à
-  assumer la reprise. Expliquer pourquoi, brièvement, avec respect.
+1. **REFUSER** — Des preuves suffisantes montrent que l'intention ou
+   l'approche est fondamentalement mauvaise (justesse fausse, hallucination
+   d'API confirmée, faille) et qu'une correction locale ne suffit pas.
+   Expliquer pourquoi, brièvement, avec respect.
+2. **NON RÉVISABLE** — Une information indispensable manque ou reste
+   inaccessible (règle d'entrée en ❌ ou ◻️) et empêche une décision sûre.
+   Fusion bloquée : rapporter le résultat du balayage critique, marquer les
+   contrôles restants ◻️, et lister exactement ce qu'il faut fournir ou
+   découper pour reprendre. Ne pas punir d'un REFUSER une information
+   simplement inaccessible.
+3. **CORRIGER** — Recevable sur le fond mais au moins un point ⚠️/❌ précis,
+   réparable avant fusion. Lister chaque point avec fichier:ligne et l'action
+   attendue.
+4. **ACCEPTER** — Niveau 1 conforme, Niveau 2 sans ❌, Niveau 3 conforme *en
+   tenant compte de la calibration de la règle 3.3* (consultative à la
+   première application), et aucun contrôle indispensable resté ◻️. Réserves
+   ⚠️ mineures listées mais non bloquantes.
 
 Toujours : citer des emplacements précis, distinguer le bloquant du cosmétique,
 et se rappeler que **refuser proprement fait partie du travail de qualité** —
@@ -157,7 +184,20 @@ règle 3.3, appliquée au réviseur lui-même.
 
 La revue décide de ce qui entre ; le rituel s'occupe de ce qui est déjà entré.
 À lancer **à intervalle régulier** (hebdomadaire recommandé), pas seulement à
-la fusion. Déroulé en quatre temps :
+la fusion.
+
+Trois niveaux d'autorisation — appliquer le moins permissif compatible avec
+la demande :
+
+- **AUDIT** (défaut) : inspecter et mesurer sans modifier l'arbre de travail —
+  rapports et caches d'outils dirigés hors du dépôt, pas d'installation, pas
+  de `--fix`, pas de commit ; comparer l'état git avant/après la passe et
+  signaler toute mutation inattendue ;
+- **JOURNAL** : créer ou compléter `hygiene-log.md`, si c'est demandé ;
+- **REMÉDIATION** : refactoriser dans le périmètre demandé, puis re-tester et
+  re-mesurer — livraison selon « Livraison des changements » ci-dessous.
+
+Déroulé en quatre temps :
 
 1. **Mesurer l'état de la base.** Produire les métriques de dette avec des
    commandes reproductibles — consigner pour chacune l'outil, sa version et la
@@ -170,7 +210,8 @@ la fusion. Déroulé en quatre temps :
    - couverture de tests : l'outil du projet (`pytest --cov`,
      `npx vitest run --coverage`, `go test -cover`…) ;
    - vulnérabilités : `npm audit --audit-level=high`, `pip-audit` ou
-     `trivy fs .` — compter les vulnérabilités hautes et critiques ;
+     `trivy fs .` — mesure **contextuelle** : la base d'avis évolue chaque
+     jour, noter sa date et ne pas intégrer ce compte à la courbe comparée ;
    - volume : `git ls-files | wc -l` (fichiers) et
      `git ls-files | xargs wc -l | tail -1` (lignes), ou `cloc` si disponible.
 
@@ -221,3 +262,12 @@ et une pull request qui satisfait elle-même les Niveaux 1 et 3 :
    auto-évaluation Niveaux 1 et 3.
 4. **Jamais d'auto-fusion** — la PR attend la revue du propriétaire humain
    (règle 3.2 : une porte unique).
+
+---
+
+## Faire évoluer le skill
+
+Toute modification de ce skill se valide contre les scénarios de
+`references/evaluation-scenarios.md` : vérifier que les verdicts suivent
+l'ordre de priorité, que ◻️ n'est jamais transformé en défaut, et qu'une
+demande d'inspection ne provoque aucune modification du dépôt.

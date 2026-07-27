@@ -12,7 +12,7 @@ Le code généré par IA passe la démo, les tests verdissent — et il peut emp
 
 Ce skill donne à un agent IA — ou à un humain — une grille pour trouver le *presque* efficacement. Il fait trois choses :
 
-- **Mode revue** — trois niveaux de règles appliqués dans l'ordre (entrée, fond, statut) et un **verdict motivé** `ACCEPTER` / `CORRIGER` / `REFUSER` — pas un avis stylistique ;
+- **Mode revue** — trois niveaux de règles appliqués dans l'ordre (entrée, fond, statut) et un **verdict motivé** `NON RÉVISABLE` / `ACCEPTER` / `CORRIGER` / `REFUSER` — pas un avis stylistique ;
 - **Mode rituel** — des passes d'hygiène régulières et outillées : mesurer (duplication, complexité, couverture), refactoriser sous protection de tests, re-mesurer, **tracer la courbe** dans un journal `hygiene-log.md` ;
 - **Livraison traçée** — tout changement produit par le skill part dans une PR qui déclare son intention, son propriétaire humain, sa preuve de comportement, et **identifie l'agent qui l'a produite** (trailer `Assisted-by`).
 
@@ -37,7 +37,8 @@ Ce dépôt n'est pas une norme : c'est un protocole à rejouer, et une hypothès
 - [`SKILL.md`](SKILL.md) — la grille complète (source de vérité) : principe directeur, les trois niveaux, le verdict, le mode rituel, la règle de livraison ;
 - [`references/checklist.md`](references/checklist.md) — la checklist détaillée, point par point : question à se poser, signaux d'alerte, cotation ✅ / ⚠️ / ❌, et modèle de compte rendu ;
 - [`references/pr-template.md`](references/pr-template.md) — le modèle de corps de PR pour les changements produits par le skill ;
-- [`references/hygiene-log-format.md`](references/hygiene-log-format.md) — le format du journal d'hygiène, pour des mesures comparables d'une passe à l'autre.
+- [`references/hygiene-log-format.md`](references/hygiene-log-format.md) — le format du journal d'hygiène, pour des mesures comparables d'une passe à l'autre ;
+- [`references/evaluation-scenarios.md`](references/evaluation-scenarios.md) — les scénarios qui valident toute évolution du skill lui-même.
 
 ## Installation
 

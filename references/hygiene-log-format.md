@@ -6,6 +6,20 @@ versions (les noter), mêmes flags**. Tout changement d'outillage casse la
 comparabilité — le signaler explicitement dans l'entrée concernée et repartir
 d'un nouvel état zéro pour la métrique touchée.
 
+Règles de comparaison :
+
+- comparer chaque métrique à la **dernière passe compatible** (mêmes
+  définition, outil, commande, périmètre), pas mécaniquement à la dernière
+  passe ;
+- l'état zéro se remet **par métrique**, pas pour tout le journal ;
+- une mesure en erreur ou impossible s'écrit `indisponible` — jamais 0, et
+  ni delta ni tendance pour elle ;
+- les audits de vulnérabilités sont **contextuels** : la base d'avis évolue
+  chaque jour ; noter la date de l'audit et laisser ce compte hors de la
+  courbe comparée ;
+- décrire la tendance **métrique par métrique** (↓ / → / ↑ / non comparable) ;
+  si elles divergent, conclure « tendance mixte » — pas de score composite.
+
 ## Structure
 
 Une entrée par passe, la plus récente en haut. Chaque entrée contient :
@@ -28,7 +42,7 @@ Colonnes du tableau : **Métrique | Outil (version) | Commande exacte | Valeur
 | Duplication | jscpd 4.0.4 | `npx jscpd --min-tokens 50 src/` | 6,8 % | −1,4 pt |
 | Complexité moyenne | radon 6.0.1 | `radon cc -s -a src/` | B (7,2) | −0,6 |
 | Couverture | pytest-cov 5.0.0 | `pytest --cov=src --cov-report=term` | 71 % | +3 pt |
-| Vulnérabilités (high+) | pip-audit 2.7.3 | `pip-audit -r requirements.txt` | 1 | −1 |
+| Vulnérabilités (high+) | pip-audit 2.7.3 | `pip-audit -r requirements.txt` (base du 2026-07-25) | 1 | — (contextuelle) |
 | Volume (lignes) | git 2.45 | `git ls-files 'src/**' \| xargs wc -l \| tail -1` | 12 480 | −310 |
 
 Actions menées :
@@ -46,7 +60,7 @@ Tendance : ↓ — la duplication et le volume baissent, la couverture monte.
 | Duplication | jscpd 4.0.4 | `npx jscpd --min-tokens 50 src/` | 8,2 % | — |
 | Complexité moyenne | radon 6.0.1 | `radon cc -s -a src/` | B (7,8) | — |
 | Couverture | pytest-cov 5.0.0 | `pytest --cov=src --cov-report=term` | 68 % | — |
-| Vulnérabilités (high+) | pip-audit 2.7.3 | `pip-audit -r requirements.txt` | 2 | — |
+| Vulnérabilités (high+) | pip-audit 2.7.3 | `pip-audit -r requirements.txt` (base du 2026-07-18) | 2 | — (contextuelle) |
 | Volume (lignes) | git 2.45 | `git ls-files 'src/**' \| xargs wc -l \| tail -1` | 12 790 | — |
 
 Actions menées : aucune (mesure initiale).

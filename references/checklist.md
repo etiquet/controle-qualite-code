@@ -2,7 +2,24 @@
 
 Grille exécutable, point par point. Pour chaque item : la **question à se
 poser**, les **signaux d'alerte** typiques (souvent propres au code IA), et la
-**cotation** ✅ / ⚠️ / ❌.
+**cotation**.
+
+## Échelle commune
+
+| Statut | Critère |
+|---|---|
+| ✅ conforme | Une preuve accessible et suffisante soutient le critère. |
+| ⚠️ à corriger | Déficience réelle mais non bloquante ; la revue continue. |
+| ❌ bloquant | Défaut matériel confirmé qui empêche une fusion sûre. |
+| ◻️ non évalué | La preuve ou l'accès manque. Ce n'est pas un défaut. |
+| N/A | Le critère ne s'applique pas, avec justification. |
+
+Qualifier chaque constat par une sévérité (**critique** : compromission, perte
+de données, comportement central faux ; **majeure** : comportement requis
+incomplet, test essentiel absent, API inexistante ; **mineure** : amélioration
+locale) et, pour un risque inféré, une confiance (haute / moyenne / faible —
+une confiance faible appelle une vérification, pas une accusation). Ne pas
+employer ⚠️ pour masquer une absence de preuve : utiliser ◻️.
 
 ---
 
@@ -13,26 +30,43 @@ poser**, les **signaux d'alerte** typiques (souvent propres au code IA), et la
   faut-il le deviner à partir du diff ?
 - Alerte : titre générique (« fix », « update »), description absente ou
   visiblement générée, PR qui « améliore » sans problème identifié.
-- Cotation : ❌ si aucune intention lisible → renvoyer sans lire le code.
+- Cotation : ❌ si les métadonnées accessibles ne contiennent aucune intention
+  lisible ; ◻️ si la description ou l'issue n'est pas accessible — demander
+  avant de coter.
 
 ### 1.2 Propriétaire humain responsable
 - Question : quel humain nommé assume ce code et sa reprise ?
 - Alerte : « généré par l'agent », aucun mainteneur prêt à répondre aux
   questions, contributeur incapable d'expliquer son propre diff.
-- Cotation : ❌ si personne n'assume.
+- Cotation : ❌ si la contribution déclare qu'aucun humain ne l'assume ; ◻️ si
+  les métadonnées ne sont pas accessibles. Un agent ou un bot ne remplace
+  jamais le propriétaire humain.
 
 ### 1.3 Preuve de comportement
 - Question : y a-t-il une reproduction, ou un test rouge → vert ?
 - Alerte : « les tests passent » sans nouveau test ; correctif sans cas
   reproduisant le bug ; capture d'écran au lieu d'une preuve exécutable.
-- Cotation : ⚠️ si preuve faible, ❌ si aucune preuve pour un correctif de bug.
+- Cotation : ⚠️ si preuve faible, ❌ si aucune preuve pour un correctif de
+  bug ; ◻️ si les résultats de tests sont inaccessibles. Ne pas exiger
+  mécaniquement un nouveau test pour un changement sans comportement
+  exécutable (documentation, configuration triviale).
 
 ### 1.4 Coût de revue proportionné
 - Question : la taille et la découpe rendent-elles la revue humainement
   possible dans un temps raisonnable ?
 - Alerte : méga-PR (milliers de lignes) générée en minutes, mélange de
   refactor + feature + reformatage dans un seul diff.
-- Cotation : ⚠️/❌ → demander un découpage avant toute revue de fond.
+- Cotation : ⚠️/❌ → demander un découpage avant toute revue de fond. Une
+  taille élevée est un signal, pas une preuve : une grosse PR expliquée,
+  découpée en commits cohérents et testée peut rester révisable.
+
+### Décision après le Niveau 1
+
+Si un élément indispensable est ❌ ou ◻️ et empêche une décision sûre :
+effectuer le **balayage critique** (secrets, injection, contrôle d'accès,
+destruction de données, dépendance suspecte — voir SKILL.md), rendre
+**NON RÉVISABLE**, marquer les contrôles restants ◻️, et lister exactement ce
+qu'il faut fournir ou découper pour reprendre.
 
 ---
 
@@ -76,7 +110,8 @@ poser**, les **signaux d'alerte** typiques (souvent propres au code IA), et la
   contre la doc/le code réel, pas contre la vraisemblance.
 - Cotation : ❌ dès qu'un appel, une option ou un import inexistant est
   confirmé (vérifié contre la doc ou le code, pas l'intuition) ; ⚠️ si l'usage
-  est réel mais déprécié ou fragile.
+  est réel mais déprécié ou fragile. Un paquet inconnu ou privé n'est pas une
+  hallucination tant que la vérification n'a pas conclu.
 
 ### 2.5 Erreurs et cas limites
 - Question : que se passe-t-il hors du chemin heureux ?
@@ -130,22 +165,33 @@ poser**, les **signaux d'alerte** typiques (souvent propres au code IA), et la
   plus souvent. (Mesurer, pas interdire.)
 - Cotation : dépôt sans convention de traçage → consultative, ⚠️ au maximum
   (recommander d'instaurer la convention) ; convention en place → ❌ si du code
-  généré n'est pas déclaré. (Voir la calibration dans SKILL.md.)
+  généré n'est pas déclaré ; ◻️ si l'usage de l'IA ne peut pas être établi ;
+  N/A si aucune assistance n'est connue et qu'aucune politique ne l'exige.
+  (Voir la calibration dans SKILL.md.) Ne pas inventer l'identité ou le modèle
+  d'un agent : écrire « non exposé par l'environnement ». `Assisted-by` est
+  documenté pour le noyau Linux mais n'est pas une norme universelle :
+  <https://www.kernel.org/doc/html/next/process/coding-assistants.html>.
 
 ---
 
 ## Modèle de compte rendu de revue
 
 ```
-VERDICT : ACCEPTER | CORRIGER | REFUSER
+VERDICT : NON RÉVISABLE | ACCEPTER | CORRIGER | REFUSER
 
 Résumé (2-3 lignes) : intention de la contribution + décision.
 
+Balayage critique (toujours, même si non révisable) :
+- résultat
+
 Bloquants (❌) :
-- fichier:ligne — problème — action attendue
+- [sévérité] fichier:ligne — problème — action attendue
 
 À corriger (⚠️) :
-- fichier:ligne — problème — suggestion
+- [sévérité] fichier:ligne — problème — suggestion
+
+Non évalué (◻️) / N-A :
+- élément — raison — information nécessaire pour coter
 
 Réserves mineures / cosmétique :
 - ...
