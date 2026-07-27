@@ -32,6 +32,17 @@ opaque* : il compile, les tests passent, mais l'intention est absente, les cas
 limites sont négligés, des fonctions inexistantes sont parfois appelées, et la
 duplication remplace la conception. Cette grille cible précisément ces défauts.
 
+## Routage et langue
+
+- **Quel mode ?** On soumet un diff, une PR ou du code à évaluer → **mode
+  revue** (trois niveaux + verdict). On demande de mesurer ou de dégonfler la
+  dette d'une base existante → **mode rituel** (passe d'hygiène). En cas de
+  doute, demander — ne pas mélanger les deux dans une même passe.
+- **Langue.** La grille est en français ; rendre le compte rendu dans la
+  langue de l'utilisateur.
+- **Source de vérité.** Ce fichier fait foi ; le README du dépôt n'en est
+  qu'un résumé.
+
 ## Comment utiliser cette grille
 
 Appliquer les trois niveaux **dans l'ordre**. Un échec au Niveau 1 stoppe la
@@ -56,6 +67,18 @@ revue complète et systématique est demandée.
 ## Niveau 1 — Règles d'entrée (avant de lire le code)
 
 Un échec ici est en principe **bloquant** : on renvoie sans réviser.
+
+Collecte des preuves selon le contexte :
+
+- **PR GitHub** : `gh pr view <n> --json title,body,author,files` (intention,
+  auteur), `gh pr diff <n> --stat` (taille et découpe), `gh pr checks <n>`
+  (état des vérifications).
+- **Branche / diff local** : `git log --format='%h %an %s' main..HEAD` et
+  `git diff --stat main...HEAD` (adapter le nom de la branche principale).
+- **Hors PR** (diff collé, fichier isolé) : les règles 1.1 et 1.2 se vérifient
+  auprès de l'utilisateur — demander l'intention et qui assume ; coter **N/A**
+  ce qui est sans objet (ex. la découpe d'une PR qui n'existe pas). Ne jamais
+  inventer une intention ou un propriétaire pour combler un trou.
 
 1. **Intention déclarée** — La contribution énonce l'*effet recherché* (le
    « pourquoi »), pas seulement le diff. Pas d'intention lisible → refus.
@@ -97,14 +120,22 @@ Un échec ici est en principe **bloquant** : on renvoie sans réviser.
    `Assisted-by` du noyau Linux), non pour l'interdire, mais pour mesurer son
    taux de défaut réel dans le temps.
 
+   *Calibration* : sur un dépôt qui ne trace encore rien, cette règle est
+   **consultative** à la première application — ⚠️ au maximum, jamais ❌ ; on
+   recommande d'instaurer la convention, on ne bloque pas. Dès qu'une
+   convention existe (modèle de PR, CONTRIBUTING, trailer `Assisted-by`), elle
+   devient **bloquante** : une contribution générée non déclarée est un ❌.
+   Sans cette calibration, aucun dépôt réel n'atteindrait jamais ACCEPTER.
+
 ---
 
 ## Verdict global
 
 Conclure toute revue par l'un des trois verdicts, **motivé et actionnable** :
 
-- **ACCEPTER** — Niveaux 1 et 3 conformes, Niveau 2 sans ❌. Réserves ⚠️
-  mineures listées mais non bloquantes.
+- **ACCEPTER** — Niveau 1 conforme, Niveau 2 sans ❌, Niveau 3 conforme *en
+  tenant compte de la calibration de la règle 3.3* (consultative à la première
+  application). Réserves ⚠️ mineures listées mais non bloquantes.
 - **CORRIGER** — Recevable sur le fond mais points ⚠️/❌ précis à traiter avant
   fusion. Lister chaque point avec fichier:ligne et l'action attendue.
 - **REFUSER** — Échec d'une règle d'entrée (N1) ou défaut de fond majeur
@@ -116,6 +147,10 @@ et se rappeler que **refuser proprement fait partie du travail de qualité** —
 la gentillesse est de dire non clairement plutôt que de laisser entrer une dette
 que quelqu'un paiera en silence.
 
+Enfin, **signer le compte rendu** : un agent s'y identifie par son nom et
+l'identifiant exact de son modèle — la même exigence de traçabilité que la
+règle 3.3, appliquée au réviseur lui-même.
+
 ---
 
 ## Mode rituel — la passe d'hygiène (dégonfler la dette)
@@ -124,17 +159,30 @@ La revue décide de ce qui entre ; le rituel s'occupe de ce qui est déjà entr�
 À lancer **à intervalle régulier** (hebdomadaire recommandé), pas seulement à
 la fusion. Déroulé en quatre temps :
 
-1. **Mesurer l'état de la base.** Produire les métriques de dette :
-   - duplication (blocs clonés, copier-coller) — outils : `jscpd`, `pylint`
-     (duplicate-code), `PMD CPD`, ou équivalent du langage ;
-   - complexité (cyclomatique / cognitive) — `radon`, `lizard`, `eslint
-     complexity`, ou équivalent ;
-   - couverture de tests — l'outil du projet ;
-   - volume : nombre de fichiers, de fonctions/méthodes, lignes de code.
+1. **Mesurer l'état de la base.** Produire les métriques de dette avec des
+   commandes reproductibles — consigner pour chacune l'outil, sa version et la
+   ligne de commande exacte :
+   - duplication : `npx jscpd --min-tokens 50 .` (multi-langages) ; à défaut
+     `pylint --disable=all --enable=duplicate-code` (Python) ou `pmd cpd` ;
+   - complexité cyclomatique : `radon cc -s -a .` ou `lizard` (Python /
+     multi-langages), règle `complexity` d'ESLint (JS/TS) — repère : signaler
+     les fonctions au-dessus de 15 ;
+   - couverture de tests : l'outil du projet (`pytest --cov`,
+     `npx vitest run --coverage`, `go test -cover`…) ;
+   - vulnérabilités : `npm audit --audit-level=high`, `pip-audit` ou
+     `trivy fs .` — compter les vulnérabilités hautes et critiques ;
+   - volume : `git ls-files | wc -l` (fichiers) et
+     `git ls-files | xargs wc -l | tail -1` (lignes), ou `cloc` si disponible.
+
+   Si un outil manque, préférer une exécution sans installation globale
+   (`npx`, `pipx run`, `uvx`) ; si aucune n'est possible, noter la mesure
+   manquante dans le journal plutôt que de substituer un chiffre incomparable.
 
 2. **Comparer à la passe précédente.** Chercher le relevé antérieur (fichier
-   `hygiene-log.md` ou équivalent à la racine du projet). Première passe →
-   c'est l'état zéro ; le créer.
+   `hygiene-log.md` à la racine du projet, au format défini dans
+   `references/hygiene-log-format.md`). Première passe → c'est l'état zéro ;
+   le créer. D'une passe à l'autre : **mêmes outils, mêmes flags** — sinon la
+   courbe est incomparable et il faut le signaler.
 
 3. **Recommander les passes de refactorisation ciblées.** À partir des
    mesures, proposer 1 à 3 actions *bornées et vérifiables*, les plus
@@ -152,3 +200,24 @@ la fusion. Déroulé en quatre temps :
 Règle du rituel : petit et régulier bat gros et rare. Une passe d'une heure
 par semaine qui fait baisser la duplication de 1 % vaut mieux qu'un grand
 nettoyage annuel que personne n'ose lancer.
+
+---
+
+## Livraison des changements produits par le skill
+
+Tout changement de code produit en appliquant ce skill — refactorisation du
+mode rituel, correction issue d'une revue — est livré via une branche dédiée
+et une pull request qui satisfait elle-même les Niveaux 1 et 3 :
+
+1. **Branche dédiée** — jamais de commit direct sur la branche principale.
+2. **Identification de l'agent** — chaque commit porte le trailer
+   `Assisted-by: <nom de l'agent> (<identifiant exact du modèle>)`, par
+   exemple `Assisted-by: Claude Code (claude-fable-5)`, et la même mention
+   figure en tête du corps de la PR. C'est la règle 3.3 appliquée à soi-même :
+   on ne peut pas exiger la traçabilité des autres et livrer anonymement.
+3. **Corps de PR conforme au modèle** `references/pr-template.md` : intention
+   déclarée, propriétaire humain qui assume, preuve de comportement (test
+   rouge→vert, ou mesures avant/après pour une passe d'hygiène), et
+   auto-évaluation Niveaux 1 et 3.
+4. **Jamais d'auto-fusion** — la PR attend la revue du propriétaire humain
+   (règle 3.2 : une porte unique).

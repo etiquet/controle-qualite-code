@@ -10,17 +10,13 @@ Ce dépôt accompagne l'article *« Maintenir du code : l'IA nous force-t-elle �
 
 Le code généré par IA passe la démo, les tests verdissent — et il peut emporter sa dette en soute : duplication, cas limites négligés, tests taillés pour passer, statut jamais tranché. Le danger n'est pas le code qui échoue (il s'élimine tout seul), c'est **le code qui marche presque**.
 
-Ce skill donne à un agent IA — ou à un humain — une grille pour trouver le *presque* efficacement. Il fait deux choses :
+Ce skill donne à un agent IA — ou à un humain — une grille pour trouver le *presque* efficacement. Il fait trois choses :
 
-**Mode revue** — appliquer trois niveaux de règles à toute contribution, dans l'ordre :
+- **Mode revue** — trois niveaux de règles appliqués dans l'ordre (entrée, fond, statut) et un **verdict motivé** `ACCEPTER` / `CORRIGER` / `REFUSER` — pas un avis stylistique ;
+- **Mode rituel** — des passes d'hygiène régulières et outillées : mesurer (duplication, complexité, couverture), refactoriser sous protection de tests, re-mesurer, **tracer la courbe** dans un journal `hygiene-log.md` ;
+- **Livraison traçée** — tout changement produit par le skill part dans une PR qui déclare son intention, son propriétaire humain, sa preuve de comportement, et **identifie l'agent qui l'a produite** (trailer `Assisted-by`).
 
-1. *Règles d'entrée* (avant même de lire le code) : intention déclarée, propriétaire humain, preuve de comportement, coût de revue proportionné ;
-2. *Règles de fond* (dans le code) : lisibilité, duplication, justesse vérifiée (≠ « les tests passent »), API réelles, cas limites, sécurité, surface de maintenance ;
-3. *Règles de statut* : marquer le jetable comme jetable, une porte unique (la règle du noyau Linux), tracer l'origine IA.
-
-Et rendre un **verdict motivé** : `ACCEPTER` / `CORRIGER` / `REFUSER` — pas un avis stylistique.
-
-**Mode rituel** — dégonfler la dette existante par passes d'hygiène régulières : mesurer (duplication, complexité, couverture), recommander 1 à 3 refactorisations bornées avec tests de protection, re-mesurer, **tracer la courbe** dans un journal `hygiene-log.md`.
+Le détail des règles fait foi dans [`SKILL.md`](SKILL.md) — ce README n'en est que le résumé.
 
 ## L'expérimentation
 
@@ -38,8 +34,10 @@ Ce dépôt n'est pas une norme : c'est un protocole à rejouer, et une hypothès
 
 ## Contenu
 
-- [`SKILL.md`](SKILL.md) — la grille complète : principe directeur, les trois niveaux, le verdict, le mode rituel ;
-- [`references/checklist.md`](references/checklist.md) — la checklist détaillée, point par point : question à se poser, signaux d'alerte, cotation ✅ / ⚠️ / ❌, et modèle de compte rendu.
+- [`SKILL.md`](SKILL.md) — la grille complète (source de vérité) : principe directeur, les trois niveaux, le verdict, le mode rituel, la règle de livraison ;
+- [`references/checklist.md`](references/checklist.md) — la checklist détaillée, point par point : question à se poser, signaux d'alerte, cotation ✅ / ⚠️ / ❌, et modèle de compte rendu ;
+- [`references/pr-template.md`](references/pr-template.md) — le modèle de corps de PR pour les changements produits par le skill ;
+- [`references/hygiene-log-format.md`](references/hygiene-log-format.md) — le format du journal d'hygiène, pour des mesures comparables d'une passe à l'autre.
 
 ## Installation
 
@@ -73,8 +71,8 @@ Les contributions sont bienvenues — c'est le but de l'expérimentation. Trois 
 2. **Améliorer la grille.** Une règle manque, une règle est trop stricte, un signal d'alerte est daté : proposez la modification ;
 3. **Rapporter les erreurs de la grille.** Les cas où le verdict était mauvais (faux REFUSER, faux ACCEPTER) sont les plus instructifs.
 
-**Règle du jeu** — en cohérence avec la grille elle-même : toute pull request arrive avec son *intention déclarée*, un *propriétaire humain* qui l'assume, et une *preuve de comportement*. Niveau 1 oblige : ce dépôt applique son propre skill à ses contributions. Le code ou le texte assisté par IA est bienvenu, déclaré (à la manière du tag `Assisted-by` du noyau Linux), et l'humain qui soumet en répond.
+**Règle du jeu** — en cohérence avec la grille elle-même : toute pull request arrive avec son *intention déclarée*, un *propriétaire humain* qui l'assume, et une *preuve de comportement*. Niveau 1 oblige : ce dépôt applique son propre skill à ses contributions. Le code ou le texte assisté par IA est bienvenu, déclaré, et l'humain qui soumet en répond. Les PR produites par un agent suivent le modèle [`references/pr-template.md`](references/pr-template.md) : le trailer `Assisted-by: <agent> (<modèle>)` figure dans les commits et en tête de la PR.
 
 ## Statut
 
-Expérimentation — v0.2, juillet 2026. Voir [LICENSE](LICENSE).
+Expérimentation — v0.3, juillet 2026. Voir [LICENSE](LICENSE).
