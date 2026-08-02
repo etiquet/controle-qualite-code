@@ -1,0 +1,36 @@
+# --- macOS ---
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Éditeurs ---
+.idea/
+.vscode/
+*.swp
+*~
+
+# --- Sorties locales non publiables ---
+private/
+
+# --- Secrets (ce dépôt est public : ceinture et bretelles) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials
+credentials.json
+.netrc
+
+# --- Artefacts de packaging du skill ---
+*.skill
+*.zip
+
+# --- Sorties d'outils de mesure du mode rituel ---
+# Le journal hygiene-log.md, lui, est fait pour être committé.
+.jscpd/
+jscpd-report.*
+coverage/
+.coverage
+htmlcov/
