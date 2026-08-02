@@ -3,15 +3,17 @@ name: controle-qualite-code
 description: >-
   Grille de contrôle qualité pour réviser du code — en particulier du code
   généré ou co-écrit par une IA — avant de l'accepter dans une base maintenue,
-  et rituel d'hygiène récurrent pour dégonfler la dette existante. À utiliser
-  quand quelqu'un demande de « relire », « auditer », « évaluer la qualité »,
-  « décider d'accepter une PR », « faire une revue de code », « vérifier du
-  code IA », ou de lancer une « passe d'hygiène » / un « rituel qualité » sur
-  une base. Mode revue : trois niveaux de règles (entrée, fond, statut) et un
-  verdict motivé NON RÉVISABLE / ACCEPTER / CORRIGER / REFUSER. Mode rituel :
-  mesurer la dette
+  et rituel d'hygiène récurrent pour dégonfler la dette existante. Mode revue :
+  trois niveaux de règles (entrée, fond, statut) et un verdict motivé
+  NON RÉVISABLE / ACCEPTER / CORRIGER / REFUSER. Mode rituel : mesurer la dette
   (duplication, complexité, couverture), recommander des passes de
   refactorisation ciblées, re-mesurer, tracer la courbe.
+when_to_use: >-
+  relire, auditer, évaluer la qualité, faire une revue de code, code review,
+  décider d'accepter une PR, "est-ce qu'on merge", vérifier du code généré par
+  IA, passe d'hygiène, rituel qualité, dégonfler la dette, duplication,
+  complexité, couverture de tests
+argument-hint: '[PR / diff / chemin à réviser — ou "rituel" pour une passe d''hygiène]'
 ---
 
 # Contrôle qualité de code (à l'ère de l'IA)
